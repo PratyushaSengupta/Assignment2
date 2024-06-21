@@ -1,0 +1,157 @@
+SATURDAY TASK:
+
+1)
+
+package mongodb_practice;
+import java.util.ArrayList;
+import java.util.List;
+import org.bson.Document;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+public class s15 {
+    public static void main(String[] args) {
+        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+        MongoDatabase database = mongoClient.getDatabase("Saturday");
+        MongoCollection<Document> collection = database.getCollection("students");
+        Document document = new Document("First_Name", "ABC")
+                .append("Last_Name", "CBA")
+                .append("marks", 94)
+                .append("age", 19);
+        collection.insertOne(document);
+        List<Document> documents = new ArrayList<>();
+        documents.add(new Document("First_Name", "123")
+                .append("Last_Name", "321")
+                .append("marks", 93)
+                .append("age", 22));
+        documents.add(new Document("First_Name", "XYZ")
+                .append("Last_Name", "ZYX")
+                .append("marks", 94)
+                .append("age", 20));
+        documents.add(new Document("First_Name", "789")
+                .append("Last_Name", "987")
+                .append("marks", 85)
+                .append("age", 21));
+        collection.insertMany(documents);
+        Document highestMarksDoc = collection.find().sort(new Document("marks", -1)).first();
+        int highestMarks = highestMarksDoc.getInteger("marks");
+        FindIterable<Document> documentsWithHighestMarks = collection.find(Filters.eq("marks", highestMarks));
+        for (Document doc : documentsWithHighestMarks) {
+        	System.out.println(doc.toJson());
+        }
+        mongoClient.close();
+    }
+}
+
+
+2)
+
+package mongodb_practice;
+import java.util.ArrayList;
+import java.util.List;
+import org.bson.Document;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+public class s16 {
+    public static void main(String[] args) {
+        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+        MongoDatabase database = mongoClient.getDatabase("Saturday");
+        MongoCollection<Document> collection = database.getCollection("students");
+        Document document = new Document("First_Name", "ABC")
+                .append("Last_Name", "CBA")
+                .append("salary", 94)
+                .append("age", 33);
+        collection.insertOne(document);
+        List<Document> documents = new ArrayList<>();
+        documents.add(new Document("First_Name", "123")
+                .append("Last_Name", "321")
+                .append("salary", 93)
+                .append("age", 42));
+        documents.add(new Document("First_Name", "XYZ")
+                .append("Last_Name", "ZYX")
+                .append("salary", 91)
+                .append("age", 24));
+        documents.add(new Document("First_Name", "789")
+                .append("Last_Name", "987")
+                .append("salary", 80)
+                .append("age", 47));
+        documents.add(new Document("First_Name", "XYZ1")
+                .append("Last_Name", "1ZYX")
+                .append("salary", 54)
+                .append("age", 34));
+        documents.add(new Document("First_Name", "7890")
+                .append("Last_Name", "0987")
+                .append("salary", 67)
+                .append("age", 27));
+        collection.insertMany(documents);
+        Document lowestSalaryDoc = collection.find().sort(new Document("salary", 1)).first();
+        int highestSalary = lowestSalaryDoc.getInteger("salary");
+        FindIterable<Document> documentsWithHighestSalary = collection.find(Filters.and(
+           		Filters.eq("salary", highestSalary),
+                Filters.gt("age", 30),
+                Filters.lt("age", 40)
+        ));
+        for (Document doc : documentsWithHighestSalary) {
+            System.out.println(doc.toJson());
+        }
+    }
+}
+
+
+
+TUESDAY QUESTIONS AND QUERIES:
+
+Q1) Write a query to find a product whose cpu is greater than or equal to 2 without using "$gte" ($or)
+
+db.products1.find({$or:[{"spec.cpu":{$gt:2}},{"spec.cpu":2}]},{name:1,"spec.cpu":1})
+
+Q2)Write a query to find a product whose colour is not black or white without using "$nin" ($not)
+
+db.products1.find({color:{$not:{$in:["black","white"]}}},{name:1,color:1})
+
+Q3)Write a query to find a product whose cpu is not greater than or equal to 2 without using "$gte","$lte","$lt"($not)
+
+db.products1.find({$nor:[{"spec.cpu":{$gt:2}},{"spec.cpu":2}]},{name:1,"spec.cpu":1})
+
+Q4)Find products with either cpu is greater than 2gb or ram is between 4 and 12.
+
+db.products1.find({$or:[{"spec.cpu":{$gt:2}},{"spec.ram":{$gte:4,$lte:12}}]},{name:1,"spec.cpu":1,"spec.ram":1})
+
+Q5)Find products with niether price is between 600 and 900 nor is it white or black.
+
+db.products1.find({$not:{$or:[{price:{$gte:600,$lte:900}},{color:{$in:["white","black"]}}]}},{name:1,price:1,color:1})
+
+Q6)Find products where price exists and there is no gray in the colours.
+
+db.products1.find({$and:[{price:{$exists:true}},{$nor:[{color:"gray"}]}]},{name:1,price:1,color:1})
+
+Q7)Find product where price between 400 amd 900 or ram as 4 units
+
+db.products1.find({$or:[{price:{$gte:400,$lte:900}},{spec:{ram:4}}]},{name:1,price:1})
+
+Q8)Find product where price is not 699 and ram between 4 and 8 or storage is 16 
+
+db.products1.find({$not:{price:699},$or:[{spec:{ram:{$gte:4,$lte:8}}},{storage:16}]},{name:1,price:1})
+
+Q9)Find product name where price does not exist and screen is less than 10
+
+db.products1.find({$and:[{price:{$exists:false}},{$nor:[{spec:{screen:{$gte:10}}}]}]},{name:1,price:1})
+
+Q10)select phone with screen size not greater than 9.5 and ram not in 4,8 
+
+db.products1.find({$or:[{"spec.screen":{$lte:9.5}},{"spec.ram":{$nin:[4,8]}}]},{name:1,price:1})
+
+Q11)select products with cpu power not less than 2.66 nor more than 3.66
+
+db.products1.find({$not:{"spec.cpu":{$lt:2.66,$gt:3.66}}},{name:1,price:1})
+
+Q12)select products with either white colour and storage not less than 128
+
+db.products1.find({$nor:[{color:{$ne:"white"}},{storage:{$lt:128}}]},{name:1,price:1})
